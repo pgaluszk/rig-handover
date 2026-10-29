@@ -1,0 +1,63 @@
+# Plan morning-digest § 3 and § 4 (ADR 0003). Builds the preview of one rig page in CI and
+# deploys it to this repo's GitHub Pages. The preview HTML is never committed: it exists only as
+# the Pages artifact, so the marker can be taken off by running this again with an empty marker.
+name: preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      night:
+        description: "Night to preview (YYYY-MM-DD)"
+        required: true
+        default: "2026-10-28"
+      marker:
+        description: "LANE_MARKER for the banner. Leave empty for the clean-up run (banner reads 'no marker set')."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: pnpm install
+      - name: Save the page as one HTML file
+        env:
+          LANE_ID: lane-07
+          LANE_MARKER: ${{ inputs.marker }}
+          PORT: 8787
+          NIGHT: ${{ inputs.night }}
+        run: |
+          pnpm start > rig.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://localhost:8787/health > /dev/null && break; sleep 1; done
+          mkdir -p _site
+          curl -sf "http://localhost:8787/digest/${NIGHT}" -o _site/index.html
+          grep -o '<span class="marker">[^<]*</span>' _site/index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
