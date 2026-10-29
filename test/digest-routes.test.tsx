@@ -22,6 +22,8 @@ const GOOD_LINES = [
 ];
 
 const JOBS_SORTED = ['digest/render', 'fixtures/refresh', 'lane/sync', 'notes/backup'];
+// The bad-line night holds GOOD_LINES[0..2] only: no fixtures/refresh.
+const BAD_LINE_JOBS = ['digest/render', 'lane/sync', 'notes/backup'];
 
 const ROW_KEYS = ['firstAt', 'job', 'lastAt', 'lastError', 'lastStatus', 'owner', 'retries', 'runs'];
 
@@ -78,7 +80,8 @@ describe('GET /digest/:night (page)', () => {
     const res = await createApp(config).request(`/digest/${BAD_LINE_NIGHT}`);
     const html = await res.text();
     expect(res.status).toBe(200);
-    for (const job of JOBS_SORTED) expect(html).toContain(job);
+    for (const job of BAD_LINE_JOBS) expect(html).toContain(job);
+    expect(html).not.toContain('fixtures/refresh');
   });
 });
 
