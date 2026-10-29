@@ -1,8 +1,9 @@
 ---
 plan: morning-digest
-status: ready
+status: done
 owner: rook
 opened: 2026-10-29
+closed: 2026-10-29
 ---
 
 # Morning digest
@@ -77,3 +78,22 @@ page again with `LANE_MARKER` unset (the banner reads "no marker set") and uploa
 link. Move this plan to `docs/plans/done/` with its issue list.
 
 Done when: the preview link no longer shows the lane marker.
+
+## Issues
+
+| # | Issue | Blocked by | Worker | Closed |
+|---|-------|-----------|--------|--------|
+| 1 | Run log reader | — | claude-code · claude-opus-5-5 · default | 2026-10-29 |
+| 2 | Digest page: GET /digest/:night | #1 (types.ts) | claude-code · claude-sonnet-5-5 · default | 2026-10-29 |
+| 3 | Digest JSON: GET /api/digest/:night | #1 (types.ts) | claude-code · claude-haiku-5-5 · default | 2026-10-29 |
+| 4 | Board link | #1 (types.ts), #2 | claude-code · claude-sonnet-5-5 · default | 2026-10-29 |
+| 5 | Route tests for the digest page and JSON | #1 (types.ts), #2, #3 | claude-code · claude-haiku-5-5 · default (merge fix: claude-opus-5-5) | 2026-10-29 |
+| 6 | Preview for review | #2 | claude-code · claude-opus-5-5 · default | 2026-10-29 |
+| 7 | Clean up: take the lane marker off the preview | #6, review | claude-code · claude-opus-5-5 · default | 2026-10-29 |
+
+Issues: https://github.com/pgaluszk/rig-handover/issues?q=label%3Aplan%3Amorning-digest
+
+#6 was closed once before the reviewer looked and reopened: a preview issue is done when the
+review is in, not when the link is sent. The preview is built in CI and deployed to GitHub Pages
+(`.github/workflows/preview.yml`), never committed (ADR 0003); clean-up is the same workflow with
+an empty marker.
